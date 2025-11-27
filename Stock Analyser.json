@@ -1,0 +1,174 @@
+{
+  "name": "Stock Analyser",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hi I am Ankita; enter the stock that you want analysis for \n",
+        "options": {
+          "inputPlaceholder": "={{chatInput}}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c543a6c6-d351-4ae9-98ac-9b00a26dddd1",
+      "name": "When chat message received",
+      "webhookId": "43c4607f-a26b-482c-99ad-833514d31386"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a professional stock market analyst. Analyze the stock ticker symbol: {{ $json.chatInput }}\n\nProvide a concise analysis in the following format:\n\n**Stock: [TICKER SYMBOL]**\n**Current Context:** [Brief 1-2 sentence market context]\n\n**Technical Analysis:**\n- Price trend (bullish/bearish/sideways)\n- Key support and resistance levels\n- Moving average signals\n- Volume analysis\n\n**Fundamental Highlights:**\n- Recent earnings/revenue trends\n- Key financial metrics (P/E, debt ratios)\n- Industry position and competitive advantages\n- Recent news impact\n\n**Recommendation:**\n- **Action:** BUY / HOLD / SELL\n- **Confidence Level:** High/Medium/Low\n- **Price Target:** [If applicable]\n- **Stop Loss:** [If applicable]\n- **Time Horizon:** Short-term (1-3 months) / Medium-term (3-12 months)\n\n**Key Risks:**\n- [List 2-3 main risks to watch]\n\n**Rationale:**\n[2-3 sentences explaining the recommendation]\n\nKeep the analysis under 300 words total. Focus on actionable insights for retail investors.\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        224,
+        0
+      ],
+      "id": "5a2b2193-8ab9-4485-9ad0-eb29018e3534",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        240,
+        224
+      ],
+      "id": "af97d88a-0476-461a-a9e6-a5516a0a56e6",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "UK5GM7gkGcFlM8mH",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        224
+      ],
+      "id": "c7b95877-18f9-4fe8-9c70-207a138a0661",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sendTo": "anki.garg9529@gmail.com",
+        "subject": "=Analysis For  {{ $('When chat message received').item.json.chatInput }}",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        800,
+        0
+      ],
+      "id": "158b85ed-6911-4125-b28b-84f18e6512a5",
+      "name": "Send a message",
+      "webhookId": "6d19cc31-f7ba-4949-9c2e-690e36e04067",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "9jmMctuU58UHlH70",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let raw = $input.first().json.output || \"\";\n\nraw = raw\n  .replace(/\\*\\*Stock:/g, \"<br><span style='font-size:18px'>🟩🟩 <b>Stock:</b></span>\")\n  .replace(/\\*\\*Current Context:/g, \"<br><span style='font-size:18px'>🟦🟦 <b>Current Context:</b></span>\")\n  .replace(/\\*\\*Technical Analysis:/g, \"<br><span style='font-size:18px'>⭐🔥 <b>Technical Analysis:</b></span>\")\n  .replace(/\\*\\*Fundamental Highlights:/g, \"<br><span style='font-size:18px'>🟧🟧 <b>Fundamental Highlights:</b></span>\")\n  .replace(/\\*\\*Recommendation:/g, \"<br><span style='font-size:18px'>🎯🚀 <b>Recommendation:</b></span>\")\n  .replace(/\\*\\*Key Risks:/g, \"<br><span style='font-size:18px'>🟥🟥 <b>Key Risks:</b></span>\")\n  .replace(/\\*\\*Rationale:/g, \"<br><span style='font-size:18px'>🧠✨ <b>Rationale:</b></span>\")\n  .replace(/ - /g, \"<br>- \")\n  .replace(/\\n/g, \"<br>\")\n  .trim();\n\n// Wrap HTML properly\nconst finalHTML = `\n<div style=\"font-family:Arial, sans-serif; font-size:14px; line-height:1.5;\">\n${raw}\n</div>\n`;\n\nreturn [\n  {\n    json: {\n      html: finalHTML\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        0
+      ],
+      "id": "23876ae2-d538-4b7f-b1b9-63ccb3e94e26",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "033f642b-a2eb-41b7-9b64-81d33b6fbbe9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7e9f595a3f803570ac30a3accb86d1efe81457c2c295b3862aeda380a47ac404"
+  },
+  "id": "m9fgRGf4f6UMCopA",
+  "tags": []
+}
