@@ -3,16 +3,7 @@ import React, { useState } from "react";
 const API_PATH = "/api/stock";
 
 type AnalysisResponse = {
-  symbol: string;
-  companyName: string;
-  currentPrice: number;
-  currency: string;
-  changePercent: number;
-  timeframe: string;
-  trend: string;
-  rating: string;
-  summary: string;
-  lastUpdated: string;
+  html: string;
 };
 
 export const App: React.FC = () => {
@@ -21,20 +12,20 @@ export const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResponse | null>(null);
+   const [success, setSuccess] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setResult(null);
+     setSuccess(null);
 
     try {
-      const url = `${API_PATH}?email=${encodeURIComponent(
-        email
-      )}&query=${encodeURIComponent(query)}`;
-
-      const res = await fetch(url, {
-        method: "GET"
+      const res = await fetch(API_PATH, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, query })
       });
 
       if (!res.ok) {
@@ -51,8 +42,20 @@ export const App: React.FC = () => {
         );
       }
 
-      const data: AnalysisResponse = await res.json();
-      setResult(data);
+      const data = await res.json();
+      const firstItem = Array.isArray(data) ? data[0] : data;
+
+      const html =
+        firstItem?.html ??
+        firstItem?.myField ??
+        (typeof firstItem === "string" ? firstItem : undefined);
+
+      if (typeof html !== "string") {
+        throw new Error("Unexpected response from server (no html / myField).");
+      }
+
+      setResult({ html });
+      setSuccess("Email sent successfully.");
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     } finally {
@@ -98,30 +101,13 @@ export const App: React.FC = () => {
 
         {error && <p className="error">Error: {error}</p>}
 
+        {success && <div className="toast">{success}</div>}
+
         {result && (
-          <div className="result">
-            <h2>
-              {result.companyName} ({result.symbol})
-            </h2>
-            <p>
-              <strong>Price:</strong> {result.currentPrice} {result.currency} ({result.changePercent}%)
-            </p>
-            <p>
-              <strong>Timeframe:</strong> {result.timeframe}
-            </p>
-            <p>
-              <strong>Trend:</strong> {result.trend}
-            </p>
-            <p>
-              <strong>Rating:</strong> {result.rating}
-            </p>
-            <p>
-              <strong>Summary:</strong> {result.summary}
-            </p>
-            <p className="muted">
-              Last updated: {new Date(result.lastUpdated).toLocaleString()}
-            </p>
-          </div>
+          <div
+            className="result"
+            dangerouslySetInnerHTML={{ __html: result.html }}
+          />
         )}
       </div>
     </div>
