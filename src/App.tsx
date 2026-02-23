@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, type FormEvent } from "react";
 
 const API_PATH = "/api/stock";
 
@@ -11,7 +11,7 @@ type AnalysisResponse = {
   timeHorizon: string;
 };
 
-export const App: React.FC = () => {
+export const App = () => {
   const [email, setEmail] = useState("");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ export const App: React.FC = () => {
   const [result, setResult] = useState<AnalysisResponse | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
