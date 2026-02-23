@@ -77,10 +77,16 @@ export const App = () => {
   return (
     <div className="app">
       <div className="card">
-        <h1>Stock Analyser</h1>
-        <p className="subtitle">
-          Enter your email and a stock or company name. We&apos;ll analyse it and email you the result.
-        </p>
+        <header className="card-header">
+          <div className="card-title-group">
+            <h1>Stock Analyser</h1>
+            <p className="subtitle">
+              Get a fast AI-backed view on any stock. Enter your email and a
+              ticker or company name to receive a concise trading outlook.
+            </p>
+          </div>
+          <span className="badge">AI-powered</span>
+        </header>
 
         <form onSubmit={handleSubmit} className="form">
           <label className="field">
@@ -91,7 +97,9 @@ export const App = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
+              disabled={loading}
             />
+            <p className="helper">We&apos;ll send your full analysis here.</p>
           </label>
 
           <label className="field">
@@ -101,41 +109,55 @@ export const App = () => {
               required
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="e.g. AAPL or Apple"
+              placeholder="e.g. AAPL, TSLA or Apple"
+              disabled={loading}
             />
+            <p className="helper">
+              Use a ticker symbol or a full company name.
+            </p>
           </label>
 
           <button type="submit" disabled={loading} className="primary-btn">
-            {loading ? "Analysing..." : "Analyse"}
+            {loading && <span className="spinner" aria-hidden="true" />}
+            <span>{loading ? "Analysing..." : "Analyse stock"}</span>
           </button>
         </form>
 
         {error && <p className="error">Error: {error}</p>}
 
-        {success && <div className="toast">{success}</div>}
+        {success && <div className="toast fade-in">{success}</div>}
 
         {result && (
-          <div className="result">
-            <p>
-              <strong>Stock:</strong> {result.stock}
-            </p>
-            <p>
-              <strong>Action:</strong> {result.action}
-            </p>
-            <p>
-              <strong>Confidence:</strong> {result.confidence}
-            </p>
-            <p>
-              <strong>Price target:</strong> {result.priceTarget}
-            </p>
-            <p>
-              <strong>Stop loss:</strong> {result.stopLoss}
-            </p>
-            <p>
-              <strong>Time horizon:</strong> {result.timeHorizon}
-            </p>
+          <div className="result fade-in">
+            <div className="result-header">
+              <div>
+                <span className="result-label">Recommendation</span>
+                <p className="result-stock">{result.stock}</p>
+              </div>
+              <span className="pill">{result.action}</span>
+            </div>
+
+            <div className="result-grid">
+              <div className="result-item">
+                <span className="result-key">Confidence</span>
+                <span className="result-value">{result.confidence}</span>
+              </div>
+              <div className="result-item">
+                <span className="result-key">Price target</span>
+                <span className="result-value">{result.priceTarget}</span>
+              </div>
+              <div className="result-item">
+                <span className="result-key">Stop loss</span>
+                <span className="result-value">{result.stopLoss}</span>
+              </div>
+              <div className="result-item">
+                <span className="result-key">Time horizon</span>
+                <span className="result-value">{result.timeHorizon}</span>
+              </div>
+            </div>
+
             <p className="muted">
-              The full analysis details have also been sent to your email.
+              A detailed breakdown has also been sent to your email.
             </p>
           </div>
         )}
