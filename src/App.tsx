@@ -3,7 +3,12 @@ import React, { useState } from "react";
 const API_PATH = "/api/stock";
 
 type AnalysisResponse = {
-  html: string;
+  stock: string;
+  action: string;
+  confidence: string;
+  priceTarget: string;
+  stopLoss: string;
+  timeHorizon: string;
 };
 
 export const App: React.FC = () => {
@@ -12,14 +17,14 @@ export const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResponse | null>(null);
-   const [success, setSuccess] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setResult(null);
-     setSuccess(null);
+    setSuccess(null);
 
     try {
       const res = await fetch(API_PATH, {
@@ -45,17 +50,23 @@ export const App: React.FC = () => {
       const data = await res.json();
       const firstItem = Array.isArray(data) ? data[0] : data;
 
-      const html =
-        firstItem?.html ??
-        firstItem?.myField ??
-        (typeof firstItem === "string" ? firstItem : undefined);
-
-      if (typeof html !== "string") {
-        throw new Error("Unexpected response from server (no html / myField).");
+      if (
+        !firstItem ||
+        typeof firstItem.stock !== "string" ||
+        typeof firstItem.action !== "string"
+      ) {
+        throw new Error("Unexpected response from server.");
       }
 
-      setResult({ html });
-      setSuccess("Email sent successfully.");
+      setResult({
+        stock: firstItem.stock,
+        action: firstItem.action,
+        confidence: firstItem.confidence,
+        priceTarget: firstItem.priceTarget,
+        stopLoss: firstItem.stopLoss,
+        timeHorizon: firstItem.timeHorizon
+      });
+      setSuccess("Email sent successfully. Details will be sent via mail.");
     } catch (err: any) {
       setError(err.message || "Something went wrong");
     } finally {
@@ -104,10 +115,29 @@ export const App: React.FC = () => {
         {success && <div className="toast">{success}</div>}
 
         {result && (
-          <div
-            className="result"
-            dangerouslySetInnerHTML={{ __html: result.html }}
-          />
+          <div className="result">
+            <p>
+              <strong>Stock:</strong> {result.stock}
+            </p>
+            <p>
+              <strong>Action:</strong> {result.action}
+            </p>
+            <p>
+              <strong>Confidence:</strong> {result.confidence}
+            </p>
+            <p>
+              <strong>Price target:</strong> {result.priceTarget}
+            </p>
+            <p>
+              <strong>Stop loss:</strong> {result.stopLoss}
+            </p>
+            <p>
+              <strong>Time horizon:</strong> {result.timeHorizon}
+            </p>
+            <p className="muted">
+              The full analysis details have also been sent to your email.
+            </p>
+          </div>
         )}
       </div>
     </div>
