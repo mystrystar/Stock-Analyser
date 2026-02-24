@@ -4,3 +4,10 @@
 
 [build.environment]
   NODE_VERSION = "18"
+
+# Proxy API requests to your backend (so it works on Netlify like in dev)
+[[redirects]]
+  from = "/api/stock"
+  to = "http://52.89.16.139:5678/webhook/stockanalyize"
+  status = 200
+  force = true
