@@ -48,23 +48,29 @@ export const App = () => {
       }
 
       const data = await res.json();
-      const firstItem = Array.isArray(data) ? data[0] : data;
-
-      if (
-        !firstItem ||
-        typeof firstItem.stock !== "string" ||
-        typeof firstItem.action !== "string"
-      ) {
+      const raw = Array.isArray(data) ? data[0] : data;
+      if (!raw || typeof raw !== "object") {
+        throw new Error("Unexpected response from server.");
+      }
+      const firstItem = raw as Record<string, unknown>;
+      const get = (key: string) => {
+        const snake = key.replace(/([A-Z])/g, (_, c) => "_" + c.toLowerCase());
+        const v = firstItem[key] ?? firstItem[snake];
+        return typeof v === "string" ? v : "";
+      };
+      const stock = get("stock");
+      const action = get("action");
+      if (!stock && !action) {
         throw new Error("Unexpected response from server.");
       }
 
       setResult({
-        stock: firstItem.stock,
-        action: firstItem.action,
-        confidence: firstItem.confidence,
-        priceTarget: firstItem.priceTarget,
-        stopLoss: firstItem.stopLoss,
-        timeHorizon: firstItem.timeHorizon
+        stock: stock || "—",
+        action: action || "—",
+        confidence: get("confidence"),
+        priceTarget: get("priceTarget"),
+        stopLoss: get("stopLoss"),
+        timeHorizon: get("timeHorizon")
       });
       setSuccess("Email sent successfully. Details will be sent via mail.");
     } catch (err: any) {
@@ -140,19 +146,19 @@ export const App = () => {
             <div className="result-grid">
               <div className="result-item">
                 <span className="result-key">Confidence</span>
-                <span className="result-value">{result.confidence}</span>
+                <span className="result-value">{result.confidence || "—"}</span>
               </div>
               <div className="result-item">
                 <span className="result-key">Price target</span>
-                <span className="result-value">{result.priceTarget}</span>
+                <span className="result-value">{result.priceTarget || "—"}</span>
               </div>
               <div className="result-item">
                 <span className="result-key">Stop loss</span>
-                <span className="result-value">{result.stopLoss}</span>
+                <span className="result-value">{result.stopLoss || "—"}</span>
               </div>
               <div className="result-item">
                 <span className="result-key">Time horizon</span>
-                <span className="result-value">{result.timeHorizon}</span>
+                <span className="result-value">{result.timeHorizon || "—"}</span>
               </div>
             </div>
 
