@@ -7,7 +7,8 @@ Users enter their **email** and a **stock or company name**. The app sends this 
 - runs your stock analysis logic, and
 - sends an email with the results back to the user,
 - while also returning a JSON response that the UI shows immediately.
-
+## See it in action
+ https://stockanaylser.netlify.app/
 ## Development
 
 ### 1. Install dependencies
